@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>樹藝師現場重量評估工具</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 12px 8px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .result-card {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 20px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .weight-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            display: block;
+            margin: 10px 0;
+        }
+
+        .formula-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>樹藝現場重量評估</h2>
+
+    <div class="section">
+        <span class="label">1. 選擇樹種 (依密度降冪)</span>
+        <div id="species-grid" class="btn-grid">
+            </div>
+    </div>
+
+    <div class="section">
+        <span class="label">2. 輸入直徑 (cm)</span>
+        <div class="btn-grid">
+            <button class="dia-btn" onclick="setDia(30, this)">30 cm</button>
+            <button class="dia-btn" onclick="setDia(40, this)">40 cm</button>
+            <button class="dia-btn" onclick="setDia(60, this)">60 cm</button>
+            <button class="dia-btn" onclick="setDia(80, this)">80 cm</button>
+        </div>
+        <input type="number" id="custom-dia" placeholder="自填直徑 (cm)" oninput="clearActive('dia-btn'); calculate();">
+    </div>
+
+    <div class="section">
+        <span class="label">3. 輸入長度 (m)</span>
+        <div class="btn-grid">
+            <button class="len-btn" onclick="setLen(0.5, this)">0.5 米</button>
+            <button class="len-btn" onclick="setLen(1, this)">1 米</button>
+            <button class="len-btn" onclick="setLen(2, this)">2 米</button>
+        </div>
+        <input type="number" id="custom-len" placeholder="自填長度 (m)" oninput="clearActive('len-btn'); calculate();">
+    </div>
+
+    <div class="result-card">
+        <div>預估生材總重區間</div>
+        <span class="weight-value" id="result-text">--- kg</span>
+        <div id="spec-info" style="font-size: 14px; color: #555;">請完成上方選取</div>
+        <div class="formula-hint">依據：圓柱體材積 × 生材密度參考值</div>
+    </div>
+</div>
+
+<script>
+    // 樹種資料庫 (密度降冪排列)
+    const speciesData = [
+        { name: "相思樹", low: 1100, high: 1200 },
+        { name: "樟樹", low: 900, high: 1000 },
+        { name: "榕樹/菩提", low: 900, high: 1000 },
+        { name: "楓香", low: 850, high: 950 },
+        { name: "肖楠/紅檜", low: 800, high: 950 },
+        { name: "苦楝/桃花心木", low: 750, high: 850 },
+        { name: "黑板樹", low: 600, high: 750 }
+    ];
+
+    let selectedDensity = { low: 0, high: 0, name: "" };
+    let selectedDia = 0;
+    let selectedLen = 0;
+
+    // 初始化樹種按鈕
+    const speciesGrid = document.getElementById('species-grid');
+    speciesData.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'spec-btn';
+        btn.innerText = s.name;
+        btn.onclick = () => {
+            clearActive('spec-btn');
+            btn.classList.add('active');
+            selectedDensity = s;
+            calculate();
+        };
+        speciesGrid.appendChild(btn);
+    });
+
+    function setDia(val, btn) {
+        clearActive('dia-btn');
+        btn.classList.add('active');
+        document.getElementById('custom-dia').value = val;
+        selectedDia = val;
+        calculate();
+    }
+
+    function setLen(val, btn) {
+        clearActive('len-btn');
+        btn.classList.add('active');
+        document.getElementById('custom-len').value = val;
+        selectedLen = val;
+        calculate();
+    }
+
+    function clearActive(className) {
+        document.querySelectorAll('.' + className).forEach(b => b.classList.remove('active'));
+    }
+
+    function calculate() {
+        const dia = parseFloat(document.getElementById('custom-dia').value);
+        const len = parseFloat(document.getElementById('custom-len').value);
+        
+        if (!selectedDensity.low || !dia || !len) return;
+
+        // V = PI * r^2 * L
+        const radiusM = (dia / 100) / 2;
+        const volume = Math.PI * Math.pow(radiusM, 2) * len;
+        
+        const weightLow = Math.round(volume * selectedDensity.low);
+        const weightHigh = Math.round(volume * selectedDensity.high);
+
+        document.getElementById('result-text').innerText = `${weightLow} ~ ${weightHigh} kg`;
+        document.getElementById('spec-info').innerText = `${selectedDensity.name} | 材積約 ${volume.toFixed(3)} m³`;
+    }
+</script>
+
+</body>
+</html>
