@@ -14,35 +14,34 @@
         }
         .container { 
             width: 100%; max-width: 390px; background: white; 
-            padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
-            display: flex; flex-direction: column; height: 100%;
+            padding: 8px 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            display: flex; flex-direction: column; height: auto; max-height: 100%;
         }
-        h2 { text-align: center; color: var(--primary); font-size: 1.1rem; margin: 0 0 6px 0; }
-        .section { margin-bottom: 6px; }
+        h2 { text-align: center; color: var(--primary); font-size: 1.1rem; margin: 0 0 8px 0; }
+        .section { margin-bottom: 8px; }
         .label { font-weight: bold; margin-bottom: 4px; display: block; border-left: 4px solid var(--primary); padding-left: 6px; font-size: 13px; }
         
         .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
         button { 
-            padding: 6px 0; border: 1px solid #ddd; background: white; 
+            padding: 8px 0; border: 1px solid #ddd; background: white; 
             border-radius: 6px; cursor: pointer; font-size: 11px; transition: 0.1s;
             line-height: 1.2; outline: none;
         }
         button.active { background: var(--primary) !important; color: white !important; font-weight: bold; border-color: var(--primary); }
         
-        select, input { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: #fff; }
+        select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: #fff; }
         
         .result-card { 
-            background: #e8f5e9; padding: 8px; border-radius: 10px; 
-            border: 2px solid var(--primary); flex-grow: 1; 
-            display: flex; flex-direction: column; justify-content: space-between;
+            background: #e8f5e9; padding: 10px; border-radius: 10px; 
+            border: 2px solid var(--primary); margin-top: 4px;
         }
-        .weight-title { font-size: 11px; color: #555; font-weight: bold; text-align: center; }
-        .weight-value { font-size: 2.2rem; font-weight: 900; color: var(--primary); margin: 2px 0; text-align: center; }
-        .res-vol { font-size: 12px; color: #1b5e20; font-weight: bold; text-align: center; }
+        .weight-title { font-size: 12px; color: #555; font-weight: bold; text-align: center; margin-bottom: 2px; }
+        .weight-value { font-size: 2.2rem; font-weight: 900; color: var(--primary); text-align: center; line-height: 1; margin: 4px 0; }
+        .res-vol { font-size: 12px; color: #1b5e20; font-weight: bold; text-align: center; margin-bottom: 6px; }
         
         .formula-box { 
-            font-size: 10px; color: #444; line-height: 1.3; 
-            border-top: 1px solid #c8e6c9; padding-top: 4px; margin-top: 4px;
+            font-size: 10px; color: #444; line-height: 1.4; 
+            border-top: 1px solid #c8e6c9; padding-top: 6px;
         }
         .warning { color: #d32f2f; font-weight: bold; }
     </style>
@@ -59,18 +58,16 @@
             <button type="button" class="spec-btn" onclick="setTree('樟樹', 900, 1000, this)">樟樹<br>0.9~1.0</button>
             <button type="button" class="spec-btn" onclick="setTree('肖楠', 900, 1050, this)">肖楠<br>0.9~1.05</button>
             <button type="button" class="spec-btn" onclick="setTree('榕樹', 900, 1000, this)">榕樹<br>0.9~1.0</button>
-            <button type="button" class="spec-btn" onclick="setTree('楓香', 850, 950, this)">楓香<br>0.85~.95</button>
-            <button type="button" class="spec-btn" onclick="setTree('苦楝', 750, 850, this)">苦楝<br>0.75~.85</button>
-            <button type="button" class="spec-btn" onclick="setTree('黑板樹', 600, 750, this)">黑板樹<br>0.6~.75</button>
         </div>
         
-        <select id="drop-tree" onchange="dropSelect()" style="margin-top:4px;">
+        <select id="drop-tree" onchange="dropSelect()" style="margin-top:5px;">
             <option value="">-- 其他樹種 (下拉選單) --</option>
             <option value="小葉欖仁,900,1050">小葉欖仁 (0.9~1.05)</option>
             <option value="台灣欒樹,1000,1150">台灣欒樹 (1.0~1.15)</option>
             <option value="烏心石,900,1100">烏心石 (0.9~1.1)</option>
-            <option value="大花紫薇,900,1050">大花紫薇 (0.9~1.05)</option>
-            <option value="茄苳,900,1100">茄苳 (0.9~1.1)</option>
+            <option value="楓香,850,950">楓香 (0.85~0.95)</option>
+            <option value="苦楝,750,850">苦楝 (0.75~0.85)</option>
+            <option value="黑板樹,600,750">黑板樹 (0.6~0.75)</option>
         </select>
     </div>
 
@@ -82,7 +79,7 @@
             <button type="button" class="dia-btn" onclick="setDia(0.5, this)">0.5m</button>
             <button type="button" class="dia-btn" onclick="setDia(0.6, this)">0.6m</button>
         </div>
-        <input type="number" id="inp-dia" placeholder="或自填直徑 (m)" step="0.01" oninput="manualInput('dia-btn')" style="margin-top:2px;">
+        <input type="number" id="inp-dia" placeholder="或自填直徑 (m)" step="0.01" oninput="manualInput('dia-btn')" style="margin-top:4px;">
     </div>
 
     <div class="section">
@@ -93,21 +90,22 @@
             <button type="button" class="len-btn" onclick="setLen(2, this)">2.0m</button>
             <button type="button" class="len-btn" onclick="setLen(3, this)">3.0m</button>
         </div>
-        <input type="number" id="inp-len" placeholder="或自填長度 (m)" step="0.1" oninput="manualInput('len-btn')" style="margin-top:2px;">
+        <input type="number" id="inp-len" placeholder="或自填長度 (m)" step="0.1" oninput="manualInput('len-btn')" style="margin-top:4px;">
     </div>
 
     <div class="result-card">
-        <div>
-            <div class="weight-title">預估生材總重</div>
-            <div class="weight-value" id="res-weight">--- kg</div>
-            <div id="res-vol" class="res-vol">請選取樹種與尺寸</div>
-        </div>
+        <div class="weight-title">預估生材總重</div>
+        <div class="weight-value" id="res-weight">--- kg</div>
+        <div id="res-vol" class="res-vol">請選取樹種與尺寸</div>
         
         <div class="formula-box">
-            $V = \pi \times (\text{直徑}/2)^2 \times L \text{ (m}^3\text{)} \mid W = V \times \text{密度}$<br>
+            長度單位：m | 重量單位：kg<br>
+            體積 V = π × (直徑/2)² × 長度 (m³)<br>
+            重量 W = V × 生材密度 (kg/m³)<br>
+            <span class="warning">吊掛評估：本數據以「活樹含水生材」計算。</span><br>
             1. 樹幹體積以圓柱體近似計算。<br>
             2. 木材基本密度參考環境部「造林及森林經營碳匯專案方法學」資料。<br>
-            3. <span class="warning">生材密度</span>係考量活樹含水率(50–120%)之實務估計值。
+            3. 生材密度係考量活樹含水率(50–120%)之實務估計值。
         </div>
     </div>
 </div>
