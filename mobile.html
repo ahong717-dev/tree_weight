@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>樹藝現場重量評估 - Mobile</title>
+    <style>
+        :root { --primary: #2e7d32; --bg: #f5f7f5; --accent: #1565c0; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, "微軟正黑體", sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 10px; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            overflow: hidden; /* 防止溢出滾動 */
+        }
+        .container { 
+            width: 100%; 
+            max-width: 400px; 
+            background: white; 
+            padding: 12px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
+        }
+        h2 { text-align: center; color: var(--primary); font-size: 1.2rem; margin: 0 0 10px 0; }
+        
+        .section { margin-bottom: 10px; }
+        .label { font-weight: bold; margin-bottom: 5px; display: block; border-left: 4px solid var(--primary); padding-left: 8px; font-size: 14px; }
+        
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 5px; }
+        /* 樹種按鈕稍微調整寬度 */
+        .tree-grid { grid-template-columns: repeat(4, 1fr); }
+        
+        button { 
+            padding: 6px 2px; border: 1px solid #ddd; background: white; 
+            border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.2s;
+            line-height: 1.2;
+        }
+        button.active { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; font-weight: bold; }
+        
+        select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: #fff; }
+        
+        .source-info { 
+            background: #eef2f7; padding: 6px 10px; border-radius: 6px; 
+            margin-top: 5px; font-size: 11px; display: none; 
+            border: 1px solid #d1d9e6;
+        }
+        .source-info a { color: var(--accent); text-decoration: none; font-weight: bold; }
+
+        .result-card { background: #e8f5e9; padding: 12px; border-radius: 10px; text-align: center; border: 2px solid var(--primary); }
+        .weight-value { font-size: 2rem; font-weight: 900; color: var(--primary); display: block; margin: 5px 0; }
+        
+        .formula-box { 
+            font-size: 10px; color: #666; line-height: 1.4; margin-top: 8px;
+            border-top: 1px solid #c8e6c9; padding-top: 5px; text-align: left;
+        }
+        
+        .mobile-link { margin-top: 10px; font-size: 12px; }
+        .mobile-link a { color: #888; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>樹藝現場重量評估</h2>
+
+    <div class="section">
+        <span class="label">1. 選擇樹種</span>
+        <div class="btn-grid tree-grid">
+            <button type="button" class="spec-btn" onclick="setTree('相思樹', 1100, 1200, '林試所', 'https://wood.tfri.gov.tw/', this)">相思樹<br>1.1~1.2</button>
+            <button type="button" class="spec-btn" onclick="setTree('樟樹', 900, 1000, '林試所', 'https://www.tfri.gov.tw/', this)">樟樹<br>0.9~1.0</button>
+            <button type="button" class="spec-btn" onclick="setTree('肖楠/紅檜', 900, 1050, '台大', 'https://www.exfo.ntu.edu.tw/', this)">肖楠<br>0.9~1.05</button>
+            <button type="button" class="spec-btn" onclick="setTree('榕樹', 900, 1000, '台大', 'https://tdr.lib.ntu.edu.tw/', this)">榕樹<br>0.9~1.0</button>
+        </div>
+        
+        <select id="drop-tree" onchange="dropSelect()" style="margin-top:5px;">
+            <option value="">-- 其他樹種 (小葉欖仁/欒樹等) --</option>
+            <option value="小葉欖仁,900,1050,環境部,https://www.moenv.gov.tw/">小葉欖仁 (0.9~1.05)</option>
+            <option value="台灣欒樹,1000,1150,林試所,https://www.tfri.gov.tw/">台灣欒樹 (1.0~1.15)</option>
+            <option value="烏心石,900,1100,林試所,https://wood.tfri.gov.tw/">烏心石 (0.9~1.1)</option>
+            <option value="大花紫薇,900,1050,環境部,https://www.moenv.gov.tw/">大花紫薇 (0.9~1.05)</option>
+            <option value="茄苳,900,1100,林務局,https://www.forest.gov.tw/">茄苳 (0.9~1.1)</option>
+        </select>
+
+        <div id="source-box" class="source-info">
+            <a id="source-link" href="#" target="_blank">資料來源</a>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="label">2. 直徑 (m)</span>
+        <div class="btn-grid">
+            <button type="button" class="dia-btn" onclick="setDia(0.3, this)">0.3m</button>
+            <button type="button" class="dia-btn" onclick="setDia(0.4, this)">0.4m</button>
+            <button type="button" class="dia-btn" onclick="setDia(0.5, this)">0.5m</button>
+            <button type="button" class="dia-btn" onclick="setDia(0.6, this)">0.6m</button>
+        </div>
+        <input type="number" id="inp-dia" placeholder="自填直徑 (m)" step="0.01" oninput="manualInput('dia-btn')">
+    </div>
+
+    <div class="section" style="margin-bottom:15px;">
+        <span class="label">3. 長度 (m)</span>
+        <div class="btn-grid">
+            <button type="button" class="len-btn" onclick="setLen(0.5, this)">0.5m</button>
+            <button type="button" class="len-btn" onclick="setLen(1, this)">1.0m</button>
+            <button type="button" class="len-btn" onclick="setLen(2, this)">2.0m</button>
+            <button type="button" class="len-btn" onclick="setLen(3, this)">3.0m</button>
+        </div>
+        <input type="number" id="inp-len" placeholder="自填長度 (m)" step="0.1" oninput="manualInput('len-btn')">
+    </div>
+
+    <div class="result-card">
+        <span style="font-size:12px; color:#666; font-weight:bold;">預估生材總重</span>
+        <span class="weight-value" id="res-weight">--- kg</span>
+        <div id="res-vol" style="font-size: 12px; color: #1b5e20;">請選取樹種尺寸</div>
+        
+        <div class="formula-box">
+            V = π × (直徑/2)² × L | W = V × 密度<br>
+            <span style="color:#d32f2f;">註：以含水生材計算，實際受空洞/形狀影響。</span>
+        </div>
+    </div>
+</div>
+
+<div class="mobile-link">
+    <a href="mobile.html">MOBILE 小畫面版本 mobile.html</a>
+</div>
+
+<script>
+    let cur = { name: '', low: 0, high: 0 };
+
+    function setTree(name, low, high, srcName, srcUrl, btn) {
+        document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('drop-tree').value = "";
+        cur = { name, low, high };
+        showSource(srcName, srcUrl);
+        calc();
+    }
+
+    function dropSelect() {
+        const val = document.getElementById('drop-tree').value;
+        if (!val) return;
+        document.querySelectorAll('.spec
