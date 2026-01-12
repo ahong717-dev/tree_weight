@@ -1,176 +1,185 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>樹藝現場重量評估</title>
-    <style>
-        :root { --primary: #2e7d32; --bg: #f8f9fa; }
-        body { font-family: -apple-system, "微軟正黑體", sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
-        
-        .section { margin-bottom: 22px; }
-        .label { font-weight: bold; margin-bottom: 10px; display: block; border-left: 4px solid var(--primary); padding-left: 8px; font-size: 16px; }
-        
-        /* 快速選單按鈕樣式 */
-        .btn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-bottom: 10px; }
-        button { 
-            padding: 12px 5px; border: 1px solid #ddd; background: white; 
-            border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s;
-            -webkit-tap-highlight-color: transparent;
-        }
-        /* 修正按鈕點擊後的強烈顯示 */
-        button.active { 
-            background: var(--primary) !important; 
-            color: white !important; 
-            border-color: var(--primary) !important; 
-            font-weight: bold;
-            box-shadow: 0 3px 6px rgba(46,125,50,0.2);
-        }
-        
-        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: white; }
-        input:focus { border-color: var(--primary); outline: none; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>樹藝現場重量評估</title>
+  <style>
+    :root { --primary: #2e7d32; --bg: #f8f9fa; }
+    body { font-family: -apple-system, "微軟正黑體", sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
 
-        /* 結果顯示區 */
-        .result-card { background: #e8f5e9; padding: 25px 15px; border-radius: 12px; text-align: center; margin-top: 20px; border: 2px solid var(--primary); }
-        .weight-value { font-size: 2.5rem; font-weight: 900; color: var(--primary); display: block; margin: 10px 0; }
-        
-        /* 公式顯示優化 */
-        .formula-info { font-size: 13px; color: #666; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(46,125,50,0.1); line-height: 1.6; }
-        .unit-note { color: #d32f2f; font-weight: bold; }
-    </style>
+    .section { margin-bottom: 22px; }
+    .label { font-weight: bold; margin-bottom: 10px; display: block; border-left: 4px solid var(--primary); padding-left: 8px; font-size: 16px; }
+
+    .btn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-bottom: 10px; }
+    button {
+      padding: 12px 5px; border: 1px solid #ddd; background: white;
+      border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button.active {
+      background: var(--primary) !important;
+      color: white !important;
+      border-color: var(--primary) !important;
+      font-weight: bold;
+      box-shadow: 0 3px 6px rgba(46,125,50,0.2);
+    }
+
+    select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: white; }
+    input:focus { border-color: var(--primary); outline: none; }
+
+    .result-card { background: #e8f5e9; padding: 25px 15px; border-radius: 12px; text-align: center; margin-top: 20px; border: 2px solid var(--primary); }
+    .weight-value { font-size: 2.5rem; font-weight: 900; color: var(--primary); display: block; margin: 10px 0; }
+
+    .formula-info { font-size: 13px; color: #666; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(46,125,50,0.1); line-height: 1.6; text-align: left; }
+    .unit-note { color: #d32f2f; font-weight: bold; }
+    .assumption { margin-top: 8px; }
+    .muted { color: #777; }
+  </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>樹藝現場重量評估</h2>
+  <h2>樹藝現場重量評估</h2>
 
-    <div class="section">
-        <span class="label">1. 選擇樹種 (依密度降冪排列)</span>
-        <div class="btn-grid">
-            <button type="button" class="spec-btn" onclick="updateSpec('相思樹', 1100, 1200, this)">相思樹</button>
-            <button type="button" class="spec-btn" onclick="updateSpec('樟樹', 900, 1000, this)">樟樹</button>
-            <button type="button" class="spec-btn" onclick="updateSpec('榕樹/菩提', 900, 1000, this)">榕樹/菩提</button>
-            <button type="button" class="spec-btn" onclick="updateSpec('楓香', 850, 950, this)">楓香</button>
-            <button type="button" class="spec-btn" onclick="updateSpec('肖楠/紅檜', 800, 950, this)">肖楠/紅檜</button>
-            <button type="button" class="spec-btn" onclick="updateSpec('苦楝', 750, 850, this)">苦楝</button>
-            <button type="button" class="spec-btn" onclick="updateSpec('黑板樹', 600, 750, this)">黑板樹</button>
-        </div>
-        <select id="drop-species" onchange="dropSpecChange()">
-            <option value="">-- 其他常用樹種 (下拉選單) --</option>
-            <option value="台灣欒樹,1000,1150">台灣欒樹 (1150 kg/m³)</option>
-            <option value="烏心石,900,1100">烏心石 (1100 kg/m³)</option>
-            <option value="茄苳,900,1100">茄苳 (1100 kg/m³)</option>
-            <option value="大花紫薇,900,1050">大花紫薇 (1050 kg/m³)</option>
-        </select>
+  <div class="section">
+    <span class="label">1. 選擇樹種（估算密度範圍；由重到輕概略排列）</span>
+
+    <div class="btn-grid">
+      <button type="button" class="spec-btn" onclick="updateSpec('相思樹', 1100, 1200, '快速按鈕', this)">相思樹</button>
+      <button type="button" class="spec-btn" onclick="updateSpec('樟樹', 900, 1000, '快速按鈕', this)">樟樹</button>
+      <button type="button" class="spec-btn" onclick="updateSpec('榕樹/菩提', 900, 1000, '快速按鈕', this)">榕樹/菩提</button>
+      <button type="button" class="spec-btn" onclick="updateSpec('楓香', 850, 950, '快速按鈕', this)">楓香</button>
+      <button type="button" class="spec-btn" onclick="updateSpec('肖楠/紅檜', 800, 950, '快速按鈕', this)">肖楠/紅檜</button>
+      <button type="button" class="spec-btn" onclick="updateSpec('苦楝', 750, 850, '快速按鈕', this)">苦楝</button>
+      <button type="button" class="spec-btn" onclick="updateSpec('黑板樹', 600, 750, '快速按鈕', this)">黑板樹</button>
     </div>
 
-    <div class="section">
-        <span class="label">2. 輸入直徑 (cm)</span>
-        <div class="btn-grid">
-            <button type="button" class="dia-btn" onclick="updateDia(30, this)">30 cm</button>
-            <button type="button" class="dia-btn" onclick="updateDia(40, this)">40 cm</button>
-            <button type="button" class="dia-btn" onclick="updateDia(60, this)">60 cm</button>
-            <button type="button" class="dia-btn" onclick="updateDia(80, this)">80 cm</button>
-        </div>
-        <input type="number" id="inp-dia" placeholder="自填直徑 (cm)" oninput="syncDia()">
-    </div>
+    <select id="drop-species" onchange="dropSpecChange()">
+      <option value="">-- 其他常用樹種（下拉選單）--</option>
+      <option value="台灣欒樹,1000,1150">台灣欒樹（1000–1150 kg/m³）</option>
+      <option value="烏心石,900,1100">烏心石（900–1100 kg/m³）</option>
+      <option value="茄苳,900,1100">茄苳（900–1100 kg/m³）</option>
+      <option value="大花紫薇,900,1050">大花紫薇（900–1050 kg/m³）</option>
+    </select>
+  </div>
 
-    <div class="section">
-        <span class="label">3. 輸入長度 (m)</span>
-        <div class="btn-grid">
-            <button type="button" class="len-btn" onclick="updateLen(0.5, this)">0.5 米</button>
-            <button type="button" class="len-btn" onclick="updateLen(1, this)">1 米</button>
-            <button type="button" class="len-btn" onclick="updateLen(2, this)">2 米</button>
-        </div>
-        <input type="number" id="inp-len" placeholder="自填長度 (m)" oninput="syncLen()">
+  <div class="section">
+    <span class="label">2. 輸入直徑（cm）</span>
+    <div class="btn-grid">
+      <button type="button" class="dia-btn" onclick="updateDia(30, this)">30 cm</button>
+      <button type="button" class="dia-btn" onclick="updateDia(40, this)">40 cm</button>
+      <button type="button" class="dia-btn" onclick="updateDia(60, this)">60 cm</button>
+      <button type="button" class="dia-btn" onclick="updateDia(80, this)">80 cm</button>
     </div>
+    <input type="number" id="inp-dia" placeholder="自填直徑（cm）" oninput="syncDia()">
+  </div>
 
-    <div class="result-card">
-        <div style="font-weight: bold; color: #555;">預估生材總重區間</div>
-        <span class="weight-value" id="res-weight">--- kg</span>
-        <div id="res-detail" style="font-size: 14px; color: #666;">請完成上方選取</div>
-        
-        <div class="formula-info">
-            <strong>計算公式 (單位已換算為 $m$)：</strong><br>
-            體積 $V = \pi \times (\text{直徑}/200)^2 \times \text{長度}$<br>
-            <span class="unit-note">※ 系統自動將直徑 $cm$ 換算為公尺半徑 $r$ 進行計算</span>
-        </div>
+  <div class="section">
+    <span class="label">3. 輸入長度（m）</span>
+    <div class="btn-grid">
+      <button type="button" class="len-btn" onclick="updateLen(0.5, this)">0.5 m</button>
+      <button type="button" class="len-btn" onclick="updateLen(1, this)">1 m</button>
+      <button type="button" class="len-btn" onclick="updateLen(2, this)">2 m</button>
     </div>
+    <input type="number" id="inp-len" placeholder="自填長度（m）" oninput="syncLen()">
+  </div>
+
+  <div class="result-card">
+    <div style="font-weight: bold; color: #555;">預估生材重量區間</div>
+    <span class="weight-value" id="res-weight">--- kg</span>
+    <div id="res-detail" style="font-size: 14px; color: #666;">請完成上方選取</div>
+
+    <div class="formula-info">
+      <strong>計算公式（單位：m）</strong><br>
+      體積 V = π × (直徑/200)² × 長度（m³）<br>
+      重量 W = V × 密度（kg/m³）<br>
+      <div class="assumption muted">
+        <span class="unit-note">注意：</span>本工具以「生材（含水）」的估算密度範圍計算；實際重量會隨含水率、樹皮厚度、空洞/腐朽、形狀偏離圓柱而變動。
+      </div>
+      <div class="assumption muted">
+        資料來源：請在頁面提供「密度範圍」所引用的資料表/文件名稱與表格位置（建議補上連結或文件名與頁碼）。
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-    // 全域變數儲存目前選擇的樹種數據
-    let curTree = { name: '', low: 0, high: 0 };
+  // 全域變數：目前選擇的樹種數據與來源
+  let curTree = { name: '', low: 0, high: 0, source: '' };
 
-    // --- 樹種選取邏輯 ---
-    function updateSpec(name, low, high, btn) {
-        document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('drop-species').value = ""; // 清除下拉選單
-        curTree = { name, low, high };
-        runCalculation();
+  // --- 樹種選取 ---
+  function updateSpec(name, low, high, source, btn) {
+    document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('drop-species').value = ""; // 清除下拉選單
+
+    curTree = { name, low, high, source };
+    runCalculation();
+  }
+
+  function dropSpecChange() {
+    const val = document.getElementById('drop-species').value;
+    if (!val) return;
+
+    // 清除快速按鈕的 active（避免誤解）
+    document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
+
+    const [name, low, high] = val.split(',');
+    curTree = { name, low: parseInt(low, 10), high: parseInt(high, 10), source: '下拉選單' };
+    runCalculation();
+  }
+
+  // --- 直徑 ---
+  function updateDia(val, btn) {
+    document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('inp-dia').value = val;
+    runCalculation();
+  }
+  function syncDia() {
+    document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('active'));
+    runCalculation();
+  }
+
+  // --- 長度 ---
+  function updateLen(val, btn) {
+    document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('inp-len').value = val;
+    runCalculation();
+  }
+  function syncLen() {
+    document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active'));
+    runCalculation();
+  }
+
+  // --- 核心計算 ---
+  function runCalculation() {
+    const d = parseFloat(document.getElementById('inp-dia').value);
+    const l = parseFloat(document.getElementById('inp-len').value);
+    const weightText = document.getElementById('res-weight');
+    const detailText = document.getElementById('res-detail');
+
+    if (!curTree.name || !d || !l) {
+      weightText.innerText = "--- kg";
+      detailText.innerText = "請完成上方選取";
+      return;
     }
 
-    function dropSpecChange() {
-        const val = document.getElementById('drop-species').value;
-        if (!val) return;
-        document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
-        const [name, low, high] = val.split(',');
-        curTree = { name, low: parseInt(low), high: parseInt(high) };
-        runCalculation();
-    }
+    // 半徑 r (m) = 直徑 (cm) / 200
+    const r = d / 200;
+    const volume = Math.PI * Math.pow(r, 2) * l;
 
-    // --- 直徑選取邏輯 ---
-    function updateDia(val, btn) {
-        document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('inp-dia').value = val;
-        runCalculation();
-    }
-    function syncDia() {
-        document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('active'));
-        runCalculation();
-    }
+    const weightLow = Math.round(volume * curTree.low);
+    const weightHigh = Math.round(volume * curTree.high);
 
-    // --- 長度選取邏輯 ---
-    function updateLen(val, btn) {
-        document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('inp-len').value = val;
-        runCalculation();
-    }
-    function syncLen() {
-        document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active'));
-        runCalculation();
-    }
-
-    // --- 核心計算與顯示 ---
-    function runCalculation() {
-        const d = parseFloat(document.getElementById('inp-dia').value);
-        const l = parseFloat(document.getElementById('inp-len').value);
-        const weightText = document.getElementById('res-weight');
-        const detailText = document.getElementById('res-detail');
-
-        if (!curTree.name || !d || !l) {
-            weightText.innerText = "--- kg";
-            detailText.innerText = "請完成上方選取";
-            return;
-        }
-
-        // 計算體積：半徑 r (m) = 直徑 (cm) / 200
-        const r = d / 200;
-        const volume = Math.PI * Math.pow(r, 2) * l;
-        
-        // 計算重量區間
-        const weightLow = Math.round(volume * curTree.low);
-        const weightHigh = Math.round(volume * curTree.high);
-
-        // 更新介面
-        weightText.innerText = `${weightLow} ~ ${weightHigh} kg`;
-        detailText.innerHTML = `<strong>${curTree.name}</strong> (推估體積約 ${volume.toFixed(3)} $m^3$)`;
-    }
+    weightText.innerText = `${weightLow} ~ ${weightHigh} kg`;
+    detailText.innerHTML =
+      `<strong>${curTree.name}</strong>（密度 ${curTree.low}–${curTree.high} kg/m³；來源：${curTree.source}；體積約 ${volume.toFixed(3)} m³）`;
+  }
 </script>
 
 </body>
