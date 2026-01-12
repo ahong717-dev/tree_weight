@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>樹藝現場重量評估 - 專業吊掛版</title>
+    <title>樹藝現場重量評估 - 最終精確版</title>
     <style>
         :root { --primary: #2e7d32; --bg: #f5f7f5; --accent: #1565c0; }
         body { font-family: -apple-system, "微軟正黑體", sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
@@ -18,19 +18,19 @@
         button { 
             padding: 10px 4px; border: 1px solid #ddd; background: white; 
             border-radius: 8px; cursor: pointer; font-size: 13px; transition: 0.2s;
+            outline: none;
         }
         button.active { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; font-weight: bold; }
         
         select, input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         
-        /* 資料來源超連結樣式 */
+        /* 資料來源超連結 */
         .source-info { 
             background: #eef2f7; padding: 10px 15px; border-radius: 8px; 
             margin-top: 10px; font-size: 13px; display: none; 
             border: 1px solid #d1d9e6; line-height: 1.5;
         }
         .source-info a { color: var(--accent); text-decoration: none; font-weight: bold; }
-        .source-info a:hover { text-decoration: underline; }
 
         /* 結果顯示 */
         .result-card { background: #e8f5e9; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; border: 2px solid var(--primary); }
@@ -45,29 +45,29 @@
     <h2>樹藝現場重量評估</h2>
 
     <div class="section">
-        <span class="label">1. 選擇樹種 (顯示估計密度範圍)</span>
+        <span class="label">1. 選擇樹種 (由重至輕排列)</span>
         <div class="btn-grid">
-            <button type="button" class="spec-btn" onclick="setTree('相思樹', 1100, 1200, '林試所-國產材性質', 'https://www.tfri.gov.tw/', this)">相思樹<br>1.1~1.2</button>
-            <button type="button" class="spec-btn" onclick="setTree('樟樹', 900, 1000, '林試所-木材識別', 'https://www.tfri.gov.tw/', this)">樟樹<br>0.9~1.0</button>
-            <button type="button" class="spec-btn" onclick="setTree('榕樹/菩提', 900, 1000, '台大-都市樹木固碳', 'https://tdr.lib.ntu.edu.tw/', this)">榕樹/菩提<br>0.9~1.0</button>
-            <button type="button" class="spec-btn" onclick="setTree('楓香', 850, 950, '林試所-平地造林', 'https://www.tfri.gov.tw/', this)">楓香<br>0.8~0.9</button>
-            <button type="button" class="spec-btn" onclick="setTree('肖楠/紅檜', 800, 950, '國產材資料庫', 'https://enews.mofa.gov.tw/', this)">肖楠/紅檜<br>0.8~0.9</button>
-            <button type="button" class="spec-btn" onclick="setTree('苦楝', 750, 850, '林試所-主要木材', 'https://www.tfri.gov.tw/', this)">苦楝<br>0.7~0.8</button>
-            <button type="button" class="spec-btn" onclick="setTree('黑板樹', 600, 750, '桃園市施工手冊', 'https://ws.tycg.gov.tw/', this)">黑板樹<br>0.6~0.7</button>
+            <button type="button" class="spec-btn" onclick="setTree('相思樹', 1100, 1200, '林試所-木材性質資料庫', 'https://wood.tfri.gov.tw/', this)">相思樹<br>1.1~1.2</button>
+            <button type="button" class="spec-btn" onclick="setTree('樟樹', 900, 1000, '林試所-國產材物理性質', 'https://www.tfri.gov.tw/', this)">樟樹<br>0.9~1.0</button>
+            <button type="button" class="spec-btn" onclick="setTree('肖楠/紅檜', 900, 1050, '台大實驗林-木材研究', 'https://www.exfo.ntu.edu.tw/', this)">肖楠/紅檜<br>0.9~1.05</button>
+            <button type="button" class="spec-btn" onclick="setTree('榕樹/菩提', 900, 1000, '台大圖書館-樹木固碳評估', 'https://tdr.lib.ntu.edu.tw/', this)">榕樹/菩提<br>0.9~1.0</button>
+            <button type="button" class="spec-btn" onclick="setTree('楓香', 850, 950, '林試所-平地造林性質', 'https://www.tfri.gov.tw/', this)">楓香<br>0.85~0.95</button>
+            <button type="button" class="spec-btn" onclick="setTree('苦楝', 750, 850, '林試所-主要木材性質', 'https://www.tfri.gov.tw/', this)">苦楝<br>0.75~0.85</button>
+            <button type="button" class="spec-btn" onclick="setTree('黑板樹', 600, 750, '桃園市樹木施工手冊', 'https://ws.tycg.gov.tw/', this)">黑板樹<br>0.6~0.75</button>
         </div>
         
         <select id="drop-tree" onchange="dropSelect()">
-            <option value="">-- 其他常見樹種 --</option>
-            <option value="小葉欖仁,900,1000,林試所資料,https://www.tfri.gov.tw/">小葉欖仁 (900~1000 kg/m³)</option>
-            <option value="台灣欒樹,1000,1150,林試所資料,https://www.tfri.gov.tw/">台灣欒樹 (1000~1150 kg/m³)</option>
-            <option value="烏心石,900,1100,國產材物理性質,https://www.tfri.gov.tw/">烏心石 (900~1100 kg/m³)</option>
-            <option value="茄苳,900,1100,環境部綠化資訊,https://www.moenv.gov.tw/">茄苳 (900~1100 kg/m³)</option>
-            <option value="大花紫薇,900,1050,環境部資料,https://www.moenv.gov.tw/">大花紫薇 (900~1050 kg/m³)</option>
+            <option value="">-- 其他常見樹種 (下拉選單) --</option>
+            <option value="台灣欒樹,1000,1150,林試所資料庫,https://www.tfri.gov.tw/">台灣欒樹 (1.0~1.15)</option>
+            <option value="烏心石,900,1100,林試所資料庫,https://wood.tfri.gov.tw/">烏心石 (0.9~1.1)</option>
+            <option value="小葉欖仁,900,1050,環境部-綠化資訊,https://www.moenv.gov.tw/">小葉欖仁 (0.9~1.05)</option>
+            <option value="大花紫薇,900,1050,環境部-綠化資訊,https://www.moenv.gov.tw/">大花紫薇 (0.9~1.05)</option>
+            <option value="茄苳,900,1100,林務局資料庫,https://www.forest.gov.tw/">茄苳 (0.9~1.1)</option>
         </select>
 
         <div id="source-box" class="source-info">
             <strong>資料來源：</strong><br>
-            <a id="source-link" href="#" target="_blank">點此查看參考文獻</a>
+            <a id="source-link" href="#" target="_blank">點此查看官方參考資料</a>
         </div>
     </div>
 
@@ -76,10 +76,10 @@
         <div class="btn-grid">
             <button type="button" class="dia-btn" onclick="setDia(0.3, this)">0.3 m</button>
             <button type="button" class="dia-btn" onclick="setDia(0.4, this)">0.4 m</button>
+            <button type="button" class="dia-btn" onclick="setDia(0.5, this)">0.5 m</button>
             <button type="button" class="dia-btn" onclick="setDia(0.6, this)">0.6 m</button>
-            <button type="button" class="dia-btn" onclick="setDia(0.8, this)">0.8 m</button>
         </div>
-        <input type="number" id="inp-dia" placeholder="自填直徑 (公尺 m)" step="0.01" oninput="manualInput('dia-btn')">
+        <input type="number" id="inp-dia" placeholder="或自填直徑 (公尺 m)" step="0.01" oninput="manualInput('dia-btn')">
     </div>
 
     <div class="section">
@@ -89,19 +89,19 @@
             <button type="button" class="len-btn" onclick="setLen(1, this)">1 m</button>
             <button type="button" class="len-btn" onclick="setLen(2, this)">2 m</button>
         </div>
-        <input type="number" id="inp-len" placeholder="自填長度 (公尺 m)" step="0.1" oninput="manualInput('len-btn')">
+        <input type="number" id="inp-len" placeholder="或自填長度 (公尺 m)" step="0.1" oninput="manualInput('len-btn')">
     </div>
 
     <div class="result-card">
-        <div style="font-weight: bold; color: #555;">預估生材總重區間 (活樹)</div>
+        <div style="font-weight: bold; color: #555;">預估生材總重區間 (含水活樹)</div>
         <span class="weight-value" id="res-weight">--- kg</span>
-        <div id="res-vol" style="font-size: 14px; color: #1b5e20;">請先選擇樹種與尺寸</div>
+        <div id="res-vol" style="font-size: 14px; color: #1b5e20;">請完成上方選取</div>
         
         <div class="formula-title">長度單位：m | 重量單位：kg</div>
         <div class="formula-text">
-            體積 $V = \pi \times (\text{直徑}/2)^2 \times \text{長度} \, (m^3)$<br>
-            重量 $W = V \times \text{生材密度} \, (kg/m^3)$<br>
-            <span style="color:#d32f2f;">注意：本工具以活樹(生材)計算，已包含含水量。</span>
+            體積 V = π × (直徑/2)² × 長度 (m³)<br>
+            重量 W = V × 生材密度 (kg/m³)<br>
+            <span style="color:#d32f2f; font-weight:bold;">吊掛評估：本數據以「活樹含水生材」計算。</span>
         </div>
     </div>
 </div>
@@ -109,6 +109,7 @@
 <script>
     let cur = { name: '', low: 0, high: 0 };
 
+    // 樹種選取
     function setTree(name, low, high, srcName, srcUrl, btn) {
         document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -134,14 +135,17 @@
         const box = document.getElementById('source-box');
         const link = document.getElementById('source-link');
         box.style.display = 'block';
-        link.innerText = "參考來源：" + name;
+        link.innerText = "資料來源：" + name;
         link.href = url;
     }
 
+    // 直徑選取：點選按鈕時會填入數值，不手動清空欄位但會覆蓋。
+    // 如果要的是「點選按鈕後清空手動欄位」，以下是修正邏輯
     function setDia(v, btn) {
         document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        document.getElementById('inp-dia').value = v;
+        // 自動清空並填入按鈕值 (或是直接清空讓使用者知道現在是用按鈕值)
+        document.getElementById('inp-dia').value = v; 
         calc();
     }
 
@@ -152,18 +156,24 @@
         calc();
     }
 
+    // 手動輸入時清除按鈕的高亮狀態
     function manualInput(cls) {
         document.querySelectorAll('.' + cls).forEach(b => b.classList.remove('active'));
         calc();
     }
 
+    // 核心計算
     function calc() {
         const d = parseFloat(document.getElementById('inp-dia').value);
         const l = parseFloat(document.getElementById('inp-len').value);
         const resW = document.getElementById('res-weight');
         const resV = document.getElementById('res-vol');
 
-        if (!cur.name || isNaN(d) || isNaN(l) || d <= 0 || l <= 0) return;
+        if (!cur.name || isNaN(d) || isNaN(l) || d <= 0 || l <= 0) {
+            resW.innerText = "--- kg";
+            resV.innerText = "請完成上方選取";
+            return;
+        }
 
         const vol = Math.PI * Math.pow(d / 2, 2) * l;
         const wLow = Math.round(vol * cur.low);
