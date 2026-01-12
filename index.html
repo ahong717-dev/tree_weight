@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>樹藝現場重量評估 - 修正版</title>
+    <title>樹藝現場重量評估 - 穩定降冪版</title>
     <style>
         :root { --primary: #2e7d32; --bg: #f8f9fa; }
         body { font-family: sans-serif; background: var(--bg); padding: 15px; display: flex; flex-direction: column; align-items: center; }
@@ -11,14 +11,13 @@
         h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
         .section { margin-bottom: 20px; }
         .label { font-weight: bold; margin-bottom: 8px; display: block; border-left: 4px solid var(--primary); padding-left: 8px; }
-        /* 確保按鈕區塊有顯示 */
-        .btn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin: 10px 0; min-height: 40px; }
-        button { padding: 12px 5px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        button.active { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
-        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .source-box { background: #f0f4f0; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px; display: none; border: 1px dashed var(--primary); }
+        .btn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin: 10px 0; }
+        button { padding: 12px 5px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
+        button.active { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; font-weight: bold; }
+        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: white; }
+        .source-box { background: #f0f4f0; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px; display: none; border: 1px dashed var(--primary); line-height: 1.5; }
         .result-card { background: #e8f5e9; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; border: 2px solid var(--primary); }
-        .weight-value { font-size: 2.2rem; font-weight: 900; color: var(--primary); display: block; margin: 5px 0; }
+        .weight-value { font-size: 2.5rem; font-weight: 900; color: var(--primary); display: block; margin: 5px 0; }
         a { color: #1b5e20; text-decoration: underline; }
     </style>
 </head>
@@ -28,18 +27,35 @@
     <h2>樹藝現場重量評估</h2>
 
     <div class="section">
-        <span class="label">1. 選擇樹種 (依密度由重到輕)</span>
-        <div id="quick-grid" class="btn-grid">
-            </div>
+        <span class="label">1. 選擇樹種 (依密度降冪排列)</span>
+        <div class="btn-grid">
+            <button class="spec-btn" onclick="setSpec('相思樹', 1100, 1200, '林試所-國產材物理性質', 'https://www.tfri.gov.tw/', this)">相思樹</button>
+            <button class="spec-btn" onclick="setSpec('樟樹', 900, 1000, '林試所-主要木材性質', 'https://www.tfri.gov.tw/', this)">樟樹</button>
+            <button class="spec-btn" onclick="setSpec('榕樹/菩提', 900, 1000, '都市樹木固碳推估', 'https://tdr.lib.ntu.edu.tw/', this)">榕樹/菩提</button>
+            <button class="spec-btn" onclick="setSpec('楓香', 850, 950, '林試所-平地造林生長', 'https://www.tfri.gov.tw/', this)">楓香</button>
+            <button class="spec-btn" onclick="setSpec('肖楠/紅檜', 800, 950, '林試所-國產材資料庫', 'https://www.tfri.gov.tw/', this)">肖楠/紅檜</button>
+            <button class="spec-btn" onclick="setSpec('苦楝', 750, 850, '林試所-木材性質試驗', 'https://www.tfri.gov.tw/', this)">苦楝</button>
+            <button class="spec-btn" onclick="setSpec('黑板樹', 600, 750, '桃園市樹木施工手冊', 'https://ws.tycg.gov.tw/', this)">黑板樹</button>
+        </div>
         
-        <span class="label" style="margin-top:15px; border-left-color: #666;">其他常用樹種 (下拉選單)</span>
+        <span class="label" style="margin-top:15px; border-left-color: #666;">其他常見樹種 (下拉選單)</span>
         <select id="other-species" onchange="selectFromDropdown()">
             <option value="">-- 請選擇其他樹種 --</option>
+            <option value="1000,1150,林試所,https://www.tfri.gov.tw/,台灣欒樹">台灣欒樹 (1150 kg/m³)</option>
+            <option value="900,1100,林試所,https://www.tfri.gov.tw/,烏心石">烏心石 (1100 kg/m³)</option>
+            <option value="900,1100,林試所,https://www.tfri.gov.tw/,茄苳">茄苳 (1100 kg/m³)</option>
+            <option value="1000,1100,林試所,https://www.tfri.gov.tw/,黃連木">黃連木 (1100 kg/m³)</option>
+            <option value="900,1050,環境部,https://freshair.moenv.gov.tw/,大花紫薇">大花紫薇 (1050 kg/m³)</option>
+            <option value="900,1050,環境部,https://freshair.moenv.gov.tw/,水黃皮">水黃皮 (1050 kg/m³)</option>
+            <option value="900,1050,環境部,https://tech.ardswc.gov.tw/,大葉山欖">大葉山欖 (1050 kg/m³)</option>
+            <option value="900,1000,林試所,https://www.tfri.gov.tw/,小葉欖仁">小葉欖仁 (1000 kg/m³)</option>
+            <option value="900,1000,林試所,https://www.tfri.gov.tw/,光蠟樹">光蠟樹 (1000 kg/m³)</option>
+            <option value="850,950,林試所,https://www.tfri.gov.tw/,阿勃勒">阿勃勒 (950 kg/m³)</option>
         </select>
 
         <div id="source-info" class="source-box">
             <div><strong>推估生材密度：</strong> <span id="dens-val"></span> kg/m³</div>
-            <div><strong>參考出處：</strong> <a id="source-link" href="#" target="_blank">讀取中...</a></div>
+            <div><strong>參考出處：</strong> <a id="source-link" href="#" target="_blank"></a></div>
         </div>
     </div>
 
@@ -51,7 +67,7 @@
             <button class="dia-btn" onclick="setDia(60, this)">60 cm</button>
             <button class="dia-btn" onclick="setDia(80, this)">80 cm</button>
         </div>
-        <input type="number" id="custom-dia" placeholder="自填直徑 (cm)" oninput="clearActive('dia-btn'); calculate();">
+        <input type="number" id="custom-dia" placeholder="自填直徑 (cm)" oninput="clearDiaActive(); calculate();">
     </div>
 
     <div class="section">
@@ -61,80 +77,77 @@
             <button class="len-btn" onclick="setLen(1, this)">1 米</button>
             <button class="len-btn" onclick="setLen(2, this)">2 米</button>
         </div>
-        <input type="number" id="custom-len" placeholder="自填長度 (m)" oninput="clearActive('len-btn'); calculate();">
+        <input type="number" id="custom-len" placeholder="自填長度 (m)" oninput="clearLenActive(); calculate();">
     </div>
 
     <div class="result-card">
         <div>預估生材總重區間</div>
         <span class="weight-value" id="result-text">--- kg</span>
         <div id="calc-detail" style="font-size: 14px; color: #555;">請完成上方選取</div>
+        <div style="font-size: 11px; color: #999; margin-top:10px;">公式：$V = \pi \times r^2 \times L$</div>
     </div>
 </div>
 
 <script>
-    const REF_TFRI = "https://www.tfri.gov.tw/"; 
-    const REF_MANUAL = "https://ws.tycg.gov.tw/001/Upload/115/relfile/13461/985280/20230323152102.pdf"; 
+    let currentLow = 0, currentHigh = 0, currentName = "";
 
-    // 1. 快速選單：依密度高標降冪 (1200 -> 750)
-    const quickData = [
-        { name: "相思樹", low: 1100, high: 1200, src: "林試所-國產材物理性質", url: REF_TFRI },
-        { name: "樟樹", low: 900, high: 1000, src: "林試所-主要木材理學試驗", url: REF_TFRI },
-        { name: "榕樹/菩提", low: 900, high: 1000, src: "都市樹木固碳能力推估", url: "https://tdr.lib.ntu.edu.tw/" },
-        { name: "楓香", low: 850, high: 950, src: "林試所-平地造林樹種生長", url: REF_TFRI },
-        { name: "肖楠/紅檜", low: 800, high: 950, src: "林試所-國產材資料庫", url: REF_TFRI },
-        { name: "苦楝/桃花心木", low: 750, high: 850, src: "林試所-木材性質試驗", url: REF_TFRI },
-        { name: "黑板樹", low: 600, high: 750, src: "桃園市樹木施工手冊", url: REF_MANUAL }
-    ];
+    function setSpec(name, low, high, src, url, btn) {
+        // 重置所有樹種選擇狀態
+        document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('other-species').value = "";
+        
+        // 設定當前樹種
+        if(btn) btn.classList.add('active');
+        currentName = name;
+        currentLow = low;
+        currentHigh = high;
 
-    // 2. 下拉選單：依密度高標降冪 (1150 -> 950)
-    const otherData = [
-        { name: "台灣欒樹", low: 1000, high: 1150, src: "林試所-平地造林重要樹種", url: REF_TFRI },
-        { name: "烏心石", low: 900, high: 1100, src: "林試所-平地造林重要樹種", url: REF_TFRI },
-        { name: "茄苳", low: 900, high: 1100, src: "林試所-平地造林重要樹種", url: REF_TFRI },
-        { name: "黃連木", low: 1000, high: 1100, src: "林試所-國產材性質", url: REF_TFRI },
-        { name: "大花紫薇", low: 900, high: 1050, src: "環境部-核定樹種介紹", url: "https://freshair.moenv.gov.tw/" },
-        { name: "水黃皮", low: 900, high: 1050, src: "環境部-空氣品質淨化區資料", url: "https://freshair.moenv.gov.tw/" },
-        { name: "大葉山欖", low: 900, high: 1050, src: "都市樹木固碳資料庫", url: "https://tech.ardswc.gov.tw/" },
-        { name: "小葉欖仁", low: 900, high: 1000, src: "林試所-小葉欖仁強度性質", url: REF_TFRI },
-        { name: "光蠟樹", low: 900, high: 1000, src: "林試所-平地造林利用", url: REF_TFRI },
-        { name: "阿勃勒", low: 850, high: 950, src: "都市林原生樹種現況展望", url: REF_TFRI }
-    ];
-
-    let currentSpec = null;
-
-    // 啟動函數：確保按鈕被產出
-    function init() {
-        const grid = document.getElementById('quick-grid');
-        grid.innerHTML = ""; // 先清空
-        quickData.forEach(s => {
-            const btn = document.createElement('button');
-            btn.innerText = s.name;
-            btn.className = 'spec-btn';
-            btn.onclick = () => {
-                document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById('other-species').value = ""; 
-                btn.classList.add('active');
-                updateSpec(s);
-            };
-            grid.appendChild(btn);
-        });
-
-        const select = document.getElementById('other-species');
-        otherData.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s.name;
-            opt.innerText = `${s.name} (${s.high} kg/m³)`;
-            select.appendChild(opt);
-        });
+        // 顯示資訊與計算
+        showInfo(low, high, src, url);
+        calculate();
     }
 
     function selectFromDropdown() {
         const val = document.getElementById('other-species').value;
         if (!val) return;
+        
+        // 取消按鈕高亮
         document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
-        const s = otherData.find(x => x.name === val);
-        updateSpec(s);
+        
+        // 解析資料 (格式: low,high,src,url,name)
+        const parts = val.split(',');
+        currentLow = parseInt(parts[0]);
+        currentHigh = parseInt(parts[1]);
+        currentName = parts[4];
+        
+        showInfo(currentLow, currentHigh, parts[2], parts[3]);
+        calculate();
     }
 
-    function updateSpec(s) {
-        currentSpec = s;
+    function showInfo(low, high, src, url) {
+        document.getElementById('source-info').style.display = 'block';
+        document.getElementById('dens-val').innerText = low + " ~ " + high;
+        const link = document.getElementById('source-link');
+        link.innerText = src;
+        link.href = url;
+    }
+
+    function setDia(v, btn) {
+        document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('custom-dia').value = v;
+        calculate();
+    }
+
+    function setLen(v, btn) {
+        document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('custom-len').value = v;
+        calculate();
+    }
+
+    function clearDiaActive() { document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('active')); }
+    function clearLenActive() { document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active')); }
+
+    function calculate() {
+        const d = parseFloat(document.getElementById('custom
