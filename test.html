@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tree Weight Evaluator</title>
+    <style>
+        :root { --primary: #2e7d32; --bg: #f5f7f5; --accent: #1565c0; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, sans-serif; background: var(--bg); 
+            margin: 0; padding: 8px; min-height: 100vh; 
+            display: flex; justify-content: center;
+        }
+        .container { 
+            width: 100%; max-width: 390px; background: white; 
+            padding: 12px 14px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            display: flex; flex-direction: column;
+        }
+        /* Header & Toggle */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        h2 { color: var(--primary); font-size: 1.3rem; margin: 0; }
+        .lang-toggle { display: flex; border: 1.5px solid #333; border-radius: 4px; overflow: hidden; }
+        .lang-btn { padding: 4px 10px; font-size: 12px; cursor: pointer; background: white; border: none; font-weight: bold; }
+        .lang-btn.active { background: #333; color: white; }
+
+        .section { margin-bottom: 10px; }
+        .label { font-weight: bold; margin-bottom: 5px; display: block; border-left: 5px solid var(--primary); padding-left: 8px; font-size: 16px; }
+        
+        /* 樹種按鈕網格 - 修改為一排三個 (3x4) */
+        .tree-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        button.spec-btn, button.dia-btn, button.len-btn { 
+            padding: 8px 2px; border: 1px solid #ddd; background: white; 
+            border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.1s;
+            line-height: 1.2; outline: none; font-weight: 500;
+        }
+        button.active { background: var(--primary) !important; color: white !important; font-weight: bold; border-color: var(--primary); }
+        .latin { font-style: italic; font-size: 10px; display: block; opacity: 0.8; margin-top: 2px; }
+        
+        /* 數據顯示橫條 */
+        .info-display { 
+            width: 100%; padding: 8px; border: 1.5px solid #ddd; border-radius: 6px; 
+            font-size: 14px; background: #fafafa; margin-top: 6px; 
+            text-align: center; color: #444; font-weight: bold; min-height: 38px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        input { 
+            width: 100%; padding: 10px 12px; border: 1.5px solid #ccc; border-radius: 8px; 
+            font-size: 16px; background: #fff; margin-top: 4px; 
+        }
+        
+        /* 快捷按鈕間距微調 */
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 4px; }
+
+        /* 結果卡片 */
+        .result-card { 
+            background: #e8f5e9; padding: 12px; border-radius: 12px; 
+            border: 2px solid var(--primary); margin-top: 5px;
+        }
+        .weight-title { font-size: 14px; color: #555; font-weight: bold; text-align: center; }
+        .weight-value { font-size: 2.2rem; font-weight: 900; color: var(--primary); margin: 5px 0; text-align: center; line-height: 1; }
+        .res-vol { font-size: 14px; color: #1b5e20; font-weight: bold; text-align: center; margin-bottom: 4px; }
+        
+        /* 專業註解 */
+        .formula-box { 
+            font-size: 11px; color: #444; line-height: 1.4; 
+            border-top: 1px solid #c8e6c9; padding-top: 6px; margin-top: 6px;
+        }
+        .warning { color: #d32f2f; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2 id="ui-title">樹藝現場重量評估</h2>
+        <div class="lang-toggle">
+            <button class="lang-btn" id="btn-en" onclick="changeLang('en')">EN</button>
+            <button class="lang-btn active" id="btn-zh" onclick="changeLang('zh')">繁中</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="label" id="ui-label-1">1. 選擇樹種 (密度範圍)</span>
+        <div class="tree-grid" id="tree-buttons"></div>
+        <div class="info-display" id="info-display">-- 請點選樹種 --</div>
+    </div>
+
+    <div class="section">
+        <span class="label" id="ui-label-2">2. 直徑 (m)</span>
+        <div class="btn-grid">
+            <button type="button" class="dia-btn" onclick="setDia(0.3, this)">0.3m</button>
+            <button type="button" class="dia-btn" onclick="setDia(0.4, this)">0.4m</button>
+            <button type="button" class="dia-btn" onclick="setDia(0.5, this)">0.5m</button>
+            <button type="button" class="dia-btn" onclick="setDia(0.6, this)">0.6m</button>
+        </div>
+        <input type="number" id="inp-dia" placeholder="或自填直徑 (m)" step="0.01" oninput="manualInput('dia-btn')">
+    </div>
+
+    <div class="section">
+        <span class="label" id="ui-label-3">3. 長度 (m)</span>
+        <div class="btn-grid">
+            <button type="button" class="len-btn" onclick="setLen(0.5, this)">0.5m</button>
+            <button type="button" class="len-btn" onclick="setLen(1, this)">1.0m</button>
+            <button type="button" class="len-btn" onclick="setLen(2, this)">2.0m</button>
+            <button type="button" class="len-btn" onclick="setLen(3, this)">3.0m</button>
+        </div>
+        <input type="number" id="inp-len" placeholder="或自填長度 (m)" step="0.1" oninput="manualInput('len-btn')">
+    </div>
+
+    <div class="result-card" id="res-card">
+        <div class="weight-title" id="ui-res-title">預估生材總重</div>
+        <div class="weight-value" id="res-weight">--- kg</div>
+        <div id="res-vol" class="res-vol">請選取樹種與尺寸</div>
+        
+        <div class="formula-box" id="ui-formula-box"></div>
+    </div>
+</div>
+
+<script>
+    let curLang = 'zh';
+    let selectedId = '';
+
+    const trees = [
+        { id: 'camphor', zh: '樟樹', en: 'Camphor', latin: 'Cinnamomum camphora', low: 900, high: 1000 },
+        { id: 'banyan', zh: '榕樹', en: 'Banyan', latin: 'Ficus microcarpa', low: 900, high: 1000 },
+        { id: 'sweetgum', zh: '楓香', en: 'Sweetgum', latin: 'Liquidambar formosana', low: 850, high: 950 },
+        { id: 'chinaberry', zh: '苦楝', en: 'China Berry', latin: 'Melia azedarach', low: 750, high: 850 },
+        { id: 'blackboard', zh: '黑板樹', en: 'Blackboard', latin: 'Alstonia scholaris', low: 600, high: 750 },
+        { id: 'almond', zh: '小葉欖仁', en: 'Madagascar Almond', latin: 'Terminalia mantaly', low: 900, high: 1050 },
+        { id: 'bishop', zh: '茄苳', en: 'Bishop Wood', latin: 'Bischofia javanica', low: 900, high: 1100 },
+        { id: 'flamegold', zh: '台灣欒樹', en: 'Flamegold', latin: 'Koelreuteria henryi', low: 1000, high: 1150 },
+        { id: 'acacia', zh: '相思樹', en: 'Acacia', latin: 'Acacia confusa', low: 1100, high: 1200 },
+        { id: 'cedar', zh: '肖楠', en: 'Incense Cedar', latin: 'Calocedrus formosana', low: 900, high: 1050 },
+        { id: 'michelia', zh: '烏心石', en: 'Taiwan Michelia', latin: 'Michelia compressa', low: 900, high: 1100 },
+        { id: 'myrtle', zh: '大花紫薇', en: 'Queen Crape Myrtle', latin: 'Lagerstroemia speciosa', low: 900, high: 1050 }
+    ];
+
+    const uiText = {
+        zh: {
+            title: '樹藝現場重量評估',
+            label1: '1. 選擇樹種 (密度範圍)',
+            label2: '2. 直徑 (m)',
+            label3: '3. 長度 (m)',
+            placeholderDia: '或自填直徑 (m)',
+            placeholderLen: '或自填長度 (m)',
+            resTitle: '預估生材總重',
+            initMsg: '請選取樹種與尺寸',
+            infoPre: '目前選擇：',
+            densUnit: 'kg/m³',
+            formula: `體積 V = π × (直徑/2)² × 長度 (m³)<br>重量 W = V × 生材密度 (kg/m³)<br><span class="warning">吊掛評估：以「活樹含水生材」計算。</span><br>1. 樹幹以圓柱體計算。<br>2. 密度參考環境部方法學。<br>3. 活樹含水率估計(50–120%)。`
+        },
+        en: {
+            title: 'Tree Weight Evaluation',
+            label1: '1. Select Species (Density)',
+            label2: '2. Diameter (m)',
+            label3: '3. Length (m)',
+            placeholderDia: 'Custom Diameter (m)',
+            placeholderLen: 'Custom Length (m)',
+            resTitle: 'Est. Green Wood Weight',
+            initMsg: 'Select species & size',
+            infoPre: 'Selected: ',
+            densUnit: 'kg/m³',
+            formula: `Vol V = π × (D/2)² × L (m³)<br>Weight W = V × Density (kg/m³)<br><span class="warning">Rigging: Based on Green Wood.</span><br>1. Calculated as a cylinder.<br>2. Ref: Ministry of Env. methodology.<br>3. Incl. 50–120% moisture.`
+        }
+    };
+
+    function renderUI() {
+        const t = uiText[curLang];
+        document.getElementById('ui-title').innerText = t.title;
+        document.getElementById('ui-label-1').innerText = t.label1;
+        document.getElementById('ui-label-2').innerText = t.label2;
+        document.getElementById('ui-label-3').innerText = t.label3;
+        document.getElementById('inp-dia').placeholder = t.placeholderDia;
+        document.getElementById('inp-len').placeholder = t.placeholderLen;
+        document.getElementById('ui-res-title').innerText = t.resTitle;
+        document.getElementById('ui-formula-box').innerHTML = t.formula;
+
+        const btnContainer = document.getElementById('tree-buttons');
+        btnContainer.innerHTML = '';
+        trees.forEach(tree => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'spec-btn';
+            if (selectedId === tree.id) btn.classList.add('active');
+            btn.innerHTML = `${tree[curLang]}<br><span class="latin">${tree.latin}</span>`;
+            btn.onclick = () => selectTree(tree.id);
+            btnContainer.appendChild(btn);
+        });
+
+        updateInfoDisplay();
+        calc();
+    }
+
+    function changeLang(lang) {
+        curLang = lang;
+        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+        document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
+        renderUI();
+    }
+
+    function selectTree(id) {
+        selectedId = id;
+        renderUI();
+    }
+
+    function updateInfoDisplay() {
+        const infoBox = document.getElementById('info-display');
+        const tree = trees.find(t => t.id === selectedId);
+        if (tree) {
+            infoBox.innerText = `${uiText[curLang].infoPre}${tree[curLang]} (${tree.low}~${tree.high} ${uiText[curLang].densUnit})`;
+            infoBox.style.color = 'var(--primary)';
+            infoBox.style.borderColor = 'var(--primary)';
+        } else {
+            infoBox.innerText = curLang === 'zh' ? '-- 請點選樹種 --' : '-- Select Species --';
+            infoBox.style.color = '#888';
+            infoBox.style.borderColor = '#ddd';
+        }
+    }
+
+    function setDia(v, btn) {
+        document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('inp-dia').value = v; 
+        calc();
+    }
+
+    function setLen(v, btn) {
+        document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('inp-len').value = v;
+        calc();
+    }
+
+    function manualInput(cls) {
+        document.querySelectorAll('.' + cls).forEach(b => b.classList.remove('active'));
+        calc();
+    }
+
+    function calc() {
+        const d = parseFloat(document.getElementById('inp-dia').value);
+        const l = parseFloat(document.getElementById('inp-len').value);
+        const resW = document.getElementById('res-weight');
+        const resV = document.getElementById('res-vol');
+        const tree = trees.find(t => t.id === selectedId);
+
+        if (!tree || isNaN(d) || isNaN(l) || d <= 0 || l <= 0) {
+            resW.innerText = "--- kg";
+            resV.innerText = uiText[curLang].initMsg;
+            return;
+        }
+
+        const vol = Math.PI * Math.pow(d / 2, 2) * l;
+        const wLow = Math.round(vol * tree.low);
+        const wHigh = Math.round(vol * tree.high);
+
+        resW.innerText = `${wLow} ~ ${wHigh} kg`;
+        const volLabel = curLang === 'zh' ? '體積' : 'Vol';
+        resV.innerHTML = `<strong>${tree[curLang]}</strong> | ${volLabel}: ${vol.toFixed(3)} m³`;
+    }
+
+    renderUI();
+</script>
+</body>
+</html>
+
